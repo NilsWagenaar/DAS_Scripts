@@ -234,6 +234,3 @@ def make_randomForest(train_x, train_y):
     RandomForest.fit(train_x, train_y)
     print('Accuracy of random forest classifier on test set: {:.2f}'.format(RandomForest.score(test_x, test_y)))
     return RandomForest.score(test_x, test_y)
-
-##This is a GIT test
-## and again
