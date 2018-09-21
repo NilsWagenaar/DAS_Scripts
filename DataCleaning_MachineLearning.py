@@ -228,9 +228,41 @@ print('Accuracy of decision tree classifier on test set: {:.2f}'.format(Decision
 # In[ ]:
 
 
-def make_randomForest(train_x, train_y):
+def make_randomForest(train_x, train_y, test_x, test_y):
     from sklearn.ensemble import RandomForestClassifier
     RandomForest = RandomForestClassifier()
     RandomForest.fit(train_x, train_y)
     print('Accuracy of random forest classifier on test set: {:.2f}'.format(RandomForest.score(test_x, test_y)))
     return RandomForest.score(test_x, test_y)
+
+
+def make_XGBoost(train_x, train_y, test_x, test_y):
+    import xgboost as xgb
+    #for large datasets, compress to svm_light file:
+    from sklearn.datasets import dump_svmlight_file
+    dump_svmlight_file(train_x, train_y, 'dtrain.svm', zero_based=True)
+    dump_svmlight_file(test_x, test_y, 'dtest.svm', zero_based=True)
+    dtrain_svm = xgb.DMatrix('dtrain.svm')
+    dtest_svm = xgb.DMatrix('dtest.svm')
+    param = {
+    'max_depth': 3,  # the maximum depth of each tree
+    'eta': 0.3,  # the training step for each iteration
+    'silent': 1,  # logging mode - quiet
+    'objective': 'multi:softprob',  # error evaluation for multiclass training
+    'num_class': 3}  # the number of classes that exist in this dataset
+    num_round = 20 
+    bst = xgb.train(param, dtrain_svm, num_round)
+    preds = bst.predict(dtest_svm)
+    best_preds = np.asarray([np.argmax(line) for line in preds])
+    from sklearn import precision_score
+    print (precision_score(test_y, best_preds, average='macro'))
+    return best_preds, precision_score(test_y, best_preds, average='macro')
+    
+
+    
+
+
+
+
+
+
